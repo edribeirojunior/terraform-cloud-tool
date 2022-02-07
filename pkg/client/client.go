@@ -12,6 +12,13 @@ import (
 	"github.com/hashicorp/go-tfe"
 )
 
+type Execute interface {
+	Create()
+	Delete()
+	Read()
+	ApproveChanges() string
+}
+
 type Workspaces struct {
 	Cl                 *tfe.Client
 	List               []tfe.Workspace
