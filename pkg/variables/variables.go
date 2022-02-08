@@ -10,12 +10,28 @@ import (
 	"github.com/hashicorp/go-tfe"
 )
 
-func Create(ws client.Workspaces) {
+func Apply(ws client.Workspaces) {
 	ctx := context.Background()
 
 	for i := 0; i < len(ws.List); i++ {
 
-		if *ws.Variables != "" {
+		varID := Read(ws)
+
+		if varID != "" {
+			variable, err := ws.Cl.Variables.Update(ctx, ws.List[i].ID, varID, tfe.VariableUpdateOptions{
+				Key:       ws.Variables,
+				Value:     ws.VariablesValue,
+				Sensitive: ws.VariablesSensitive,
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Printf("Variable updated: %s, in Workspace: %s\n", variable.Key, ws.List[i].Name)
+		}
+
+		if *ws.Variables != "" && varID == "" {
 			variable, err := ws.Cl.Variables.Create(ctx, ws.List[i].ID, tfe.VariableCreateOptions{
 				Key:       ws.Variables,
 				Value:     ws.VariablesValue,
@@ -33,7 +49,30 @@ func Create(ws client.Workspaces) {
 	}
 }
 
-func Read(ws client.Workspaces) {
+func Read(ws client.Workspaces) string {
+	ctx := context.Background()
+
+	for i := 0; i < len(ws.List); i++ {
+		fmt.Printf("Read Variable %s for %s\n", *ws.Variables, ws.List[i].Name)
+		variable, _ := ws.Cl.Variables.List(ctx, ws.List[i].ID, tfe.VariableListOptions{
+			ListOptions: tfe.ListOptions{PageSize: 100},
+		})
+
+		for j := 0; j < len(variable.Items); j++ {
+			if variable.Items[j].Key == *ws.Variables {
+				fmt.Printf("Name: %s, Value: %s,  Sensitive: %t\n", variable.Items[j].Key, variable.Items[j].Value, variable.Items[j].Sensitive)
+				return variable.Items[j].ID
+			}
+		}
+
+		fmt.Printf("Variable not found for Workspace %s\n", ws.List[i].Name)
+		fmt.Println()
+	}
+
+	return ""
+}
+
+func List(ws client.Workspaces) {
 	ctx := context.Background()
 
 	for i := 0; i < len(ws.List); i++ {
@@ -93,7 +132,7 @@ func ApproveChanges(ws client.Workspaces, action string) string {
 		wsList = append(wsList, ws.List[i].Name)
 	}
 	if action == "create" {
-		fmt.Printf("The Variable %s will be created in these workspaces:\n", *ws.Variables)
+		fmt.Printf("The Variable %s will be created/updated in these workspaces:\n", *ws.Variables)
 		for _, i := range wsList {
 			fmt.Printf("%s\n", i)
 		}
@@ -108,7 +147,7 @@ func ApproveChanges(ws client.Workspaces, action string) string {
 
 	}
 
-	fmt.Printf("\n Approve changes? (y/n)\n")
+	fmt.Printf("\nApprove changes? (y/n)\n")
 	var approved string
 	fmt.Scanln(&approved)
 

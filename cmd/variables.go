@@ -12,6 +12,7 @@ func init() {
 	varsCmd.PersistentFlags().StringVar(&varValue, "vv", "", "Variable Value")
 	varsCmd.PersistentFlags().BoolVar(&varSensitive, "vs", false, "Variable Value is Sensitive")
 
+	varsCmd.AddCommand(varsReadCmd)
 	varsCmd.AddCommand(varsListCmd)
 	varsCmd.AddCommand(varsApplyCmd)
 	varsCmd.AddCommand(varsDeleteCmd)
@@ -26,6 +27,18 @@ var varsCmd = &cobra.Command{
 	},
 }
 
+var varsReadCmd = &cobra.Command{
+	Use:   "read",
+	Short: "Read variable in a Workspace",
+	Long:  "Read variable in a Workspace",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
+
+		variables.Read(nCl)
+	},
+}
+
 var varsListCmd = &cobra.Command{
 	Use:   "list",
 	Short: "List variables in a Workspace",
@@ -34,7 +47,7 @@ var varsListCmd = &cobra.Command{
 
 		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
 
-		variables.Read(nCl)
+		variables.List(nCl)
 	},
 }
 
@@ -49,7 +62,7 @@ var varsApplyCmd = &cobra.Command{
 		approved := variables.ApproveChanges(nCl, "create")
 
 		if approved == "y" || approved == "yes" {
-			variables.Create(nCl)
+			variables.Apply(nCl)
 		}
 	},
 }

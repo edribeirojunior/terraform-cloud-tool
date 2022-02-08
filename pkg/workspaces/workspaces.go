@@ -62,7 +62,7 @@ func ApproveChanges(ws client.Workspaces, action string) string {
 
 	}
 
-	fmt.Printf("\n Approve changes? (y/n)\n")
+	fmt.Printf("\nApprove changes? (y/n)\n")
 	var approved string
 	fmt.Scanln(&approved)
 
