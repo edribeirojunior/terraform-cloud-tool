@@ -44,10 +44,12 @@ Available Commands:
 Flags:
   -h, --help        help for workspace
       --ts string   The tags to set in the workspace
+      --vs string   The Version to set in the workspace
 
 Global Flags:
-      --o string   The organization to use to authenticate in TFCloud
-      --t string   The token to use to authenticate in TFCloud
+      --o string    The organization to use to authenticate in TFCloud
+      --t string    The token to use to authenticate in TFCloud
+      --wt string   Filter the Workspace Name (REGEX)
 
 Use "terraform-cloud-tool workspace [command] --help" for more information about a command.
 ```
