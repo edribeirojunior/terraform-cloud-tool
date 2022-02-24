@@ -7,7 +7,6 @@ import (
 
 func init() {
 	varsCmd.PersistentFlags().StringVar(&wtags, "wtg", "", "The tags to filter the workspaces")
-	varsCmd.PersistentFlags().StringVar(&wtype, "wt", "", "Filter the Workspace Name (REGEX)")
 	varsCmd.PersistentFlags().StringVar(&varName, "vn", "", "Variable Name")
 	varsCmd.PersistentFlags().StringVar(&varValue, "vv", "", "Variable Value")
 	varsCmd.PersistentFlags().BoolVar(&varSensitive, "vs", false, "Variable Value is Sensitive")

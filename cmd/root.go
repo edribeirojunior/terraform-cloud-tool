@@ -23,6 +23,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&token, "t", "", "The token to use to authenticate in TFCloud")
 	rootCmd.PersistentFlags().StringVar(&org, "o", "", "The organization to use to authenticate in TFCloud")
+	rootCmd.PersistentFlags().StringVar(&wtype, "wt", "", "Filter the Workspace Name (REGEX)")
 
 	rootCmd.AddCommand(worksCmd)
 	rootCmd.AddCommand(varsCmd)

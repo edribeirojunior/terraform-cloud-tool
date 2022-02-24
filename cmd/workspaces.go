@@ -9,6 +9,7 @@ import (
 
 func init() {
 	worksCmd.PersistentFlags().StringVar(&setTags, "ts", "", "The tags to set in the workspace")
+	worksCmd.PersistentFlags().StringVar(&setVersion, "vs", "", "The Version to set in the workspace")
 
 	worksCmd.AddCommand(worksApplyCmd)
 	worksCmd.AddCommand(worksDeleteCmd)

@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	token, org, wtags, wtype, varName, varValue, setTags string
-	varSensitive                                         bool
+	token, org, wtags, wtype, varName, varValue, setTags, setVersion string
+	varSensitive                                                     bool
 )
 
 func NewClient(token, org, wtags, wtype, varName, varvalue, setTags string, varSensitive bool) client.Workspaces {
@@ -17,7 +17,7 @@ func NewClient(token, org, wtags, wtype, varName, varvalue, setTags string, varS
 
 	wsList := client.GetWorkspacesList(cl, o, wtags)
 
-	ws := client.NewWorkspace(cl, wsList, &wtype, &setTags, &varName, &varValue, &varSensitive)
+	ws := client.NewWorkspace(cl, wsList, &wtype, &setTags, &setVersion, &varName, &varValue, &varSensitive)
 	return ws
 
 }
