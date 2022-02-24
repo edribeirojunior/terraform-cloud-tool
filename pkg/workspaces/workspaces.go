@@ -36,6 +36,19 @@ func Create(ws client.Workspaces) {
 
 			fmt.Printf("Tags created: %s, in Workspace %s\n", *ws.Tags, ws.List[i].Name)
 		}
+
+		if *ws.Version != "" {
+			version := tfe.String(*ws.Version)
+			_, err := ws.Cl.Workspaces.UpdateByID(ctx, ws.List[i].ID, tfe.WorkspaceUpdateOptions{
+				TerraformVersion: version,
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Printf("Version Changed: %s, in Workspace %s\n", *ws.Version, ws.List[i].Name)
+		}
 	}
 }
 
@@ -47,10 +60,19 @@ func ApproveChanges(ws client.Workspaces, action string) string {
 		wsList = append(wsList, ws.List[i].Name)
 	}
 	if action == "create" {
-		fmt.Printf("The Tags %s will be created in these workspaces:\n", *ws.Variables)
-		for _, i := range wsList {
-			fmt.Printf("%s\n", i)
+		if *ws.Tags != "" {
+			fmt.Printf("The Tags will be created in these workspaces:\n")
+			for _, i := range wsList {
+				fmt.Printf("%s\n", i)
+			}
 		}
+		if *ws.Version != "" {
+			fmt.Printf("The Terraform version of environment will change in these workspaces:\n")
+			for _, i := range wsList {
+				fmt.Printf("%s\n", i)
+			}
+		}
+
 		// } else if action == "delete" {
 		// 	fmt.Printf("The Variable %s will be deleted in these workspaces:\n", *ws.Variables)
 		// 	for _, i := range wsList {

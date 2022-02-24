@@ -23,6 +23,7 @@ type Workspaces struct {
 	Cl                 *tfe.Client
 	List               []tfe.Workspace
 	Tags               *string `json:",omitempty"`
+	Version            *string `json:",omitempty"`
 	Variables          *string `json:",omitempty"`
 	VariablesValue     *string `json:",omitempty"`
 	VariablesSensitive *bool   `json:",omitempty"`
@@ -74,7 +75,7 @@ func readTfToken(tPath string) string {
 
 }
 
-func NewWorkspace(client *tfe.Client, wsList *tfe.WorkspaceList, workspaceTypePtr, setTags, variableNamePtr, variableValuePtr *string, variableSenstivePtr *bool) Workspaces {
+func NewWorkspace(client *tfe.Client, wsList *tfe.WorkspaceList, workspaceTypePtr, setTags, setVersion, variableNamePtr, variableValuePtr *string, variableSenstivePtr *bool) Workspaces {
 
 	wList := GetWorkspace(wsList, *workspaceTypePtr)
 
@@ -82,6 +83,7 @@ func NewWorkspace(client *tfe.Client, wsList *tfe.WorkspaceList, workspaceTypePt
 		Cl:                 client,
 		List:               wList,
 		Tags:               setTags,
+		Version:            setVersion,
 		Variables:          variableNamePtr,
 		VariablesValue:     variableValuePtr,
 		VariablesSensitive: variableSenstivePtr,
