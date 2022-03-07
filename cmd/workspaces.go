@@ -3,16 +3,15 @@ package cmd
 import (
 	"fmt"
 
-	workspace "github.com/edribeirojunior/terraform-cloud-tool/pkg/workspaces"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	worksCmd.PersistentFlags().StringVar(&setTags, "ts", "", "The tags to set in the workspace")
-	worksCmd.PersistentFlags().StringVar(&setVersion, "vs", "", "The Version to set in the workspace")
-
+	worksCmd.PersistentFlags().StringVar(&setTerraformVersion, "tfv", "1.0.4", "The terraform version to set in the workspace")
 	worksCmd.AddCommand(worksApplyCmd)
 	worksCmd.AddCommand(worksDeleteCmd)
+	worksCmd.AddCommand(worksReadCmd)
 }
 
 var worksCmd = &cobra.Command{
@@ -30,12 +29,12 @@ var worksApplyCmd = &cobra.Command{
 	Long:  `Apply Workspaces in Terraform Cloud`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
+		nCl := NewWorkspaceClient(token, org, wtags, wtype, setTags, setTerraformVersion)
 
-		approved := workspace.ApproveChanges(nCl, "create")
+		approved := nCl.ApproveChanges("create")
 
 		if approved == "y" || approved == "yes" {
-			workspace.Create(nCl)
+			nCl.Create()
 		}
 	},
 }
@@ -47,5 +46,17 @@ var worksDeleteCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("delete")
 		cmd.Help()
+	},
+}
+
+var worksReadCmd = &cobra.Command{
+	Use:   "read",
+	Short: "Read Workspace",
+	Long:  "Read Workspace",
+	Run: func(cmd *cobra.Command, args []string) {
+
+		nCl := NewWorkspaceClient(token, org, wtags, wtype, setTags, setTerraformVersion)
+
+		nCl.Read(org)
 	},
 }

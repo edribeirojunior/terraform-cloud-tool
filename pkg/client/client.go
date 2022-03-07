@@ -9,6 +9,8 @@ import (
 	"os"
 	"regexp"
 
+	vr "github.com/edribeirojunior/terraform-cloud-tool/pkg/variables"
+	ws "github.com/edribeirojunior/terraform-cloud-tool/pkg/workspaces"
 	"github.com/hashicorp/go-tfe"
 )
 
@@ -20,13 +22,8 @@ type Execute interface {
 }
 
 type Workspaces struct {
-	Cl                 *tfe.Client
-	List               []tfe.Workspace
-	Tags               *string `json:",omitempty"`
-	Version            *string `json:",omitempty"`
-	Variables          *string `json:",omitempty"`
-	VariablesValue     *string `json:",omitempty"`
-	VariablesSensitive *bool   `json:",omitempty"`
+	Workspace ws.Workspace `json:",omitempty"`
+	Variable  vr.Variable  `json:",omitempty"`
 }
 
 func NewTfClient(token string) *tfe.Client {
@@ -104,7 +101,7 @@ func GetOrg(client *tfe.Client, organization string) *tfe.Organization {
 
 }
 
-func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags string) *tfe.WorkspaceList {
+func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilter string) []tfe.Workspace {
 	ctx := context.Background()
 
 	workspace, err := client.Workspaces.List(ctx, org.Name, tfe.WorkspaceListOptions{
@@ -117,7 +114,9 @@ func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags string) 
 		return nil
 	}
 
-	return workspace
+	wsList := GetWorkspace(workspace, wsfilter)
+
+	return wsList
 
 }
 
