@@ -6,19 +6,28 @@ import (
 	"log"
 	"os"
 
-	"github.com/edribeirojunior/terraform-cloud-tool/pkg/client"
 	"github.com/hashicorp/go-tfe"
 )
 
-func Read(ws client.Workspaces) {
-	//	ctx := context.Background()
+func NewClient(client *tfe.Client, ws []tfe.Workspace, setTags, setTerraformVersion string) Workspace {
+
+	return Workspace{
+		Cl:               client,
+		List:             ws,
+		Tags:             &setTags,
+		TerraformVersion: &setTerraformVersion,
+	}
+}
+
+func (ws *Workspace) Read(org string) {
 
 	for i := 0; i < len(ws.List); i++ {
+		fmt.Printf("Workspaces Name %s \n", ws.List[i].Name)
 
 	}
 }
 
-func Create(ws client.Workspaces) {
+func (ws *Workspace) Create() {
 	ctx := context.Background()
 
 	for i := 0; i < len(ws.List); i++ {
@@ -36,10 +45,44 @@ func Create(ws client.Workspaces) {
 
 			fmt.Printf("Tags created: %s, in Workspace %s\n", *ws.Tags, ws.List[i].Name)
 		}
+
+		if *ws.TerraformVersion != "" {
+
+			tfVersion := *ws.TerraformVersion
+			_, err := ws.Cl.Workspaces.UpdateByID(ctx, ws.List[i].ID, tfe.WorkspaceUpdateOptions{
+				TerraformVersion: tfe.String(tfVersion),
+			})
+
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Printf("Terraform Version updated to %s, in Workspace %s\n", *ws.TerraformVersion, ws.List[i].Name)
+		}
 	}
 }
 
-func ApproveChanges(ws client.Workspaces, action string) string {
+// func Update(ws client.Workspaces, org string) {
+// 	ctx := context.Background()
+
+// 	for i := 0; i < len(ws.List); i++ {
+// 		if *ws.TerraformVersion != "" {
+
+// 			tfVersion := *ws.TerraformVersion
+// 			_, err := ws.Cl.Workspaces.Update(ctx, org, ws.List[i].Name, tfe.WorkspaceUpdateOptions{
+// 				TerraformVersion: tfe.String(tfVersion),
+// 			})
+
+// 			if err != nil {
+// 				log.Fatal(err)
+// 			}
+
+// 			fmt.Printf("Terraform Version updated to %s, in Workspace %s\n", *ws.TerraformVersion, ws.List[i].Name)
+// 		}
+// 	}
+// }
+
+func (ws *Workspace) ApproveChanges(action string) string {
 
 	var wsList []string
 
@@ -47,7 +90,7 @@ func ApproveChanges(ws client.Workspaces, action string) string {
 		wsList = append(wsList, ws.List[i].Name)
 	}
 	if action == "create" {
-		fmt.Printf("The Tags %s will be created in these workspaces:\n", *ws.Variables)
+		fmt.Printf("The Tags/Terraform Version will be created in these workspaces:\n")
 		for _, i := range wsList {
 			fmt.Printf("%s\n", i)
 		}

@@ -1,13 +1,11 @@
 package cmd
 
 import (
-	"github.com/edribeirojunior/terraform-cloud-tool/pkg/variables"
 	"github.com/spf13/cobra"
 )
 
 func init() {
 	varsCmd.PersistentFlags().StringVar(&wtags, "wtg", "", "The tags to filter the workspaces")
-	varsCmd.PersistentFlags().StringVar(&wtype, "wt", "", "Filter the Workspace Name (REGEX)")
 	varsCmd.PersistentFlags().StringVar(&varName, "vn", "", "Variable Name")
 	varsCmd.PersistentFlags().StringVar(&varValue, "vv", "", "Variable Value")
 	varsCmd.PersistentFlags().BoolVar(&varSensitive, "vs", false, "Variable Value is Sensitive")
@@ -33,9 +31,9 @@ var varsReadCmd = &cobra.Command{
 	Long:  "Read variable in a Workspace",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
+		varCl := NewVariableClient(token, org, wtags, wtype, varName, varValue, varSensitive)
 
-		variables.Read(nCl)
+		varCl.Read()
 	},
 }
 
@@ -45,9 +43,9 @@ var varsListCmd = &cobra.Command{
 	Long:  "List variables in a Workspace",
 	Run: func(cmd *cobra.Command, args []string) {
 
-		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
+		varCl := NewVariableClient(token, org, wtags, wtype, varName, varValue, varSensitive)
 
-		variables.List(nCl)
+		varCl.ListVars()
 	},
 }
 
@@ -57,12 +55,12 @@ var varsApplyCmd = &cobra.Command{
 	Long:  `Create Variables from Terraform Cloud`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
+		varCl := NewVariableClient(token, org, wtags, wtype, varName, varValue, varSensitive)
 
-		approved := variables.ApproveChanges(nCl, "create")
+		approved := varCl.ApproveChanges("create")
 
 		if approved == "y" || approved == "yes" {
-			variables.Apply(nCl)
+			varCl.Apply()
 		}
 	},
 }
@@ -73,12 +71,12 @@ var varsDeleteCmd = &cobra.Command{
 	Long:  `Delete Variables from Terraform Cloud`,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
+		varCl := NewVariableClient(token, org, wtags, wtype, varName, varValue, varSensitive)
 
-		approved := variables.ApproveChanges(nCl, "delete")
+		approved := varCl.ApproveChanges("delete")
 
 		if approved == "y" || approved == "yes" {
-			variables.Delete(nCl)
+			varCl.Delete()
 		}
 
 	},
