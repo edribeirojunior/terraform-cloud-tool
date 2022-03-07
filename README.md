@@ -1,10 +1,10 @@
 # Terraform Cloud Tool
 
-This is a CLI to help changing and doing stuff in Terraform Cloud. 
+This is a CLI to help changing and doing stuff in Terraform Cloud.
 
 ## Terraform CLI Functions
 
-```
+```  bash
 $ terraform-cloud-tool
 Terraform Cloud Tool is a tool to manage Terraform Cloud.
 
@@ -25,10 +25,11 @@ Flags:
 Use "terraform-cloud-tool [command] --help" for more information about a command.
 ```
 
-This tool was made using [Cobra](https://github.com/spf13/cobra), so it's based with differnet commands, we'll list below: 
+This tool was made using [Cobra](https://github.com/spf13/cobra), so it's based with differnet commands, we'll list below:
+
 ### Workspaces
 
-```
+```  bash
 $ terraform-cloud-tool workspace 
 Create/Delete/Edit Workspaces in Terraform Cloud
 
@@ -43,19 +44,21 @@ Available Commands:
 Flags:
   -h, --help        help for workspace
       --ts string   The tags to set in the workspace
+      --vs string   The Version to set in the workspace
 
 Global Flags:
-      --o string   The organization to use to authenticate in TFCloud
-      --t string   The token to use to authenticate in TFCloud
+      --o string    The organization to use to authenticate in TFCloud
+      --t string    The token to use to authenticate in TFCloud
+      --wt string   Filter the Workspace Name (REGEX)
 
 Use "terraform-cloud-tool workspace [command] --help" for more information about a command.
 ```
 
-Currently we have just the `apply` and `delete` Tags in Workspaces. 
+Currently we have just the `apply` and `delete` Tags in Workspaces.
 
 ### Variable
 
-```
+``` bash
 $ terraform-cloud-tool variable
 Create/Delete/Edit Variables from Terraform Cloud
 
@@ -84,11 +87,11 @@ Global Flags:
 Use "terraform-cloud-tool variable [command] --help" for more information about a command.
 ```
 
-Flags: 
+Flags:
 
-| Flag      | Description | Scope | 
-| --------- | ----------- | ----- | 
-| --o       | Organization Name | Global | 
+| Flag      | Description | Scope |
+| --------- | ----------- | ----- |
+| --o       | Organization Name | Global |
 | --t       | The token responsible to authe in TFCloud | Global |
 | --vn      | Variable Name | Variable |
 | --vs      | if value is Sensitive | Variable |
@@ -96,12 +99,11 @@ Flags:
 | --wt      | Filter the workspace using Regex | Variable |
 | --wtg     | Tags to filter workspaces | Variable |
 
-
-All this flags will be used to variable command. 
+All this flags will be used to variable command.
 
 ### Variable - List
 
-```
+```  bash
 $ terraform-cloud-tool variable list --o "organization-stamps" --wt "testing-.*-test"
 Listing all Variables in testing-1-2-3-test
 Name: var1, Value: number1
@@ -109,24 +111,22 @@ Name: var2, Value: number2
 Name: varSensitive1 
 ```
 
-### Variable Read 
+### Variable Read
 
-```
+```  bash
 $ terraform-cloud-tool variable read --o "organization-stamps" --wt "testing-.*-test" --vn "var1"
 Read Variable var1 for testing-1-2-3-test
 Name: var1, Value: number1, Sensitive: false
 ```
 
 ### Variable Delete
+
+```  bash
+terraform-cloud-tool variable delete --o "organization-stamps" --wt "testing-.*-test" --vn "var1"
 ```
-$ terraform-cloud-tool variable delete --o "organization-stamps" --wt "testing-.*-test" --vn "var1"
-```
+
 ### Variable Apply
+
+```  bash
+terraform-cloud-tool variable apply --o "organization-stamps" --wt "testing-.*-test" --vn "var1" --vv "number1"
 ```
-$ terraform-cloud-tool variable apply --o "organization-stamps" --wt "testing-.*-test" --vn "var1" --vv "number1"
-```
-
-
-
-
-

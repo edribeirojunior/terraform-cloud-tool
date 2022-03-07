@@ -94,6 +94,13 @@ func (ws *Workspace) ApproveChanges(action string) string {
 		for _, i := range wsList {
 			fmt.Printf("%s\n", i)
 		}
+		if *ws.Version != "" {
+			fmt.Printf("The Terraform version of environment will change in these workspaces:\n")
+			for _, i := range wsList {
+				fmt.Printf("%s\n", i)
+			}
+		}
+
 		// } else if action == "delete" {
 		// 	fmt.Printf("The Variable %s will be deleted in these workspaces:\n", *ws.Variables)
 		// 	for _, i := range wsList {

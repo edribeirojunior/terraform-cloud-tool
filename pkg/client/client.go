@@ -72,6 +72,22 @@ func readTfToken(tPath string) string {
 
 }
 
+func NewWorkspace(client *tfe.Client, wsList *tfe.WorkspaceList, workspaceTypePtr, setTags, setVersion, variableNamePtr, variableValuePtr *string, variableSenstivePtr *bool) Workspaces {
+
+	wList := GetWorkspace(wsList, *workspaceTypePtr)
+
+	return Workspaces{
+		Cl:                 client,
+		List:               wList,
+		Tags:               setTags,
+		Version:            setVersion,
+		Variables:          variableNamePtr,
+		VariablesValue:     variableValuePtr,
+		VariablesSensitive: variableSenstivePtr,
+	}
+
+}
+
 func GetOrg(client *tfe.Client, organization string) *tfe.Organization {
 	ctx := context.Background()
 
