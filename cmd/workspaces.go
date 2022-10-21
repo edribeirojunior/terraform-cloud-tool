@@ -9,10 +9,13 @@ import (
 func init() {
 	worksCmd.PersistentFlags().StringVar(&setTags, "ts", "", "The tags to set in the workspace")
 	worksCmd.PersistentFlags().StringVar(&setTerraformVersion, "tfv", "1.0.4", "The terraform version to set in the workspace")
+	worksCmd.PersistentFlags().StringVar(&wtags, "wtg", "", "The tags to filter the workspaces")
+	worksCmd.PersistentFlags().BoolVar(&setLock, "tl", true, "Lock Workspace")
 	worksCmd.AddCommand(worksApplyCmd)
 	worksCmd.AddCommand(worksDeleteCmd)
 	worksCmd.AddCommand(worksReadCmd)
 	worksCmd.AddCommand(worksRunsDelete)
+	worksCmd.AddCommand(worksUnlock)
 }
 
 var worksCmd = &cobra.Command{
@@ -36,6 +39,22 @@ var worksRunsDelete = &cobra.Command{
 
 		if approved == "y" || approved == "yes" {
 			nCl.Delete()
+		}
+	},
+}
+
+var worksUnlock = &cobra.Command{
+	Use:   "unlock",
+	Short: "unlock",
+	Long:  `Unlock Workspace`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		nCl := NewWorkspaceClient(token, org, wtags, wtype, setTags, setTerraformVersion)
+
+		approved := nCl.ApproveChanges("unlock")
+
+		if approved == "y" || approved == "yes" {
+			nCl.Unlock()
 		}
 	},
 }

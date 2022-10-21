@@ -1,0 +1,64 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "workspace-unlock",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+               "workspace",
+               "unlock",
+               "--o",
+               "outsystems",
+               "--wt",
+               "env-",
+               "--wtg",
+               "ring:ea,type:environment,env:rundev"
+            ]
+        },
+        {
+            "name": "workspace-read",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+               "workspace",
+               "read",
+               "--o",
+               "outsystems",
+               "--wt",
+               "env-",
+               "--wtg",
+               "ring:ea,type:environment,env:rundev"
+            ]
+        },
+        {
+            "name": "vars-apply-sec",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}",
+            "args": [
+               "vars",
+               "apply",
+               "--o",
+               "outsystems",
+               "--wt",
+               "env-",
+               "--wtg",
+               "ring:ea,type:environment,env:rundev",
+               "--vn",
+               "login_vault_role_id",
+               "--vv",
+               "0000000000000",
+               "--vs"
+            ]
+        }
+    ]
+}

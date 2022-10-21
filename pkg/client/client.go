@@ -9,8 +9,6 @@ import (
 	"os"
 	"regexp"
 
-	vr "github.com/edribeirojunior/terraform-cloud-tool/pkg/variables"
-	ws "github.com/edribeirojunior/terraform-cloud-tool/pkg/workspaces"
 	"github.com/hashicorp/go-tfe"
 )
 
@@ -22,8 +20,17 @@ type Execute interface {
 }
 
 type Workspaces struct {
-	Workspace ws.Workspace `json:",omitempty"`
-	Variable  vr.Variable  `json:",omitempty"`
+	Cl                 *tfe.Client
+	List               []tfe.Workspace
+	ListLocked         []tfe.Workspace
+	Tags               *string `json:",omitempty"`
+	Version            *string `json:",omitempty"`
+	Variables          *string `json:",omitempty"`
+	VariablesValue     *string `json:",omitempty"`
+	VariablesSensitive *bool   `json:",omitempty"`
+
+	//Workspace ws.Workspace `json:",omitempty"`
+	//Variable  vr.Variable  `json:",omitempty"`
 }
 
 func NewTfClient(token string) *tfe.Client {
@@ -72,13 +79,14 @@ func readTfToken(tPath string) string {
 
 }
 
-func NewWorkspace(client *tfe.Client, wsList *tfe.WorkspaceList, workspaceTypePtr, setTags, setVersion, variableNamePtr, variableValuePtr *string, variableSenstivePtr *bool) Workspaces {
+func NewWorkspace(client *tfe.Client, wsList []*tfe.Workspace, workspaceTypePtr, setTags, setVersion, variableNamePtr, variableValuePtr *string, variableSenstivePtr *bool, lock bool) Workspaces {
 
-	wList := GetWorkspace(wsList, *workspaceTypePtr)
+	wList, wsListLocked := GetWorkspace(wsList, *workspaceTypePtr)
 
 	return Workspaces{
 		Cl:                 client,
 		List:               wList,
+		ListLocked:         wsListLocked,
 		Tags:               setTags,
 		Version:            setVersion,
 		Variables:          variableNamePtr,
@@ -101,7 +109,7 @@ func GetOrg(client *tfe.Client, organization string) *tfe.Organization {
 
 }
 
-func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilter string) []tfe.Workspace {
+func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilter string, lock bool) ([]tfe.Workspace, []tfe.Workspace) {
 	ctx := context.Background()
 
 	var workspaces []*tfe.Workspace
@@ -112,7 +120,7 @@ func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilte
 
 	if err != nil {
 		log.Fatal(err)
-		return nil
+		return nil, nil
 	}
 
 	for i := 0; i < workspace.TotalPages; i++ {
@@ -122,24 +130,39 @@ func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilte
 		}
 	}
 
-	wsList := GetWorkspace(workspaces, wsfilter)
+	wsList, wsListLocked := GetWorkspace(workspaces, wsfilter)
 
-	return wsList
+	return wsList, wsListLocked
 
 }
 
-func GetWorkspace(workspaceName []*tfe.Workspace, wsfilter string) []tfe.Workspace {
+func GetWorkspace(workspaces []*tfe.Workspace, wsfilter string) ([]tfe.Workspace, []tfe.Workspace) {
 	var wsList []tfe.Workspace
-	for i := 0; i < len(workspaceName); i++ {
+	var wsListLocked []tfe.Workspace
 
-		found, _ := regexp.MatchString(wsfilter, workspaceName[i].Name)
-		if found {
-			wsList = append(wsList, *workspaceName[i])
+	fmt.Printf("Getting %d workspaces\n", len(workspaces))
+
+	for _, w := range workspaces {
+
+		found, err := regexp.MatchString(wsfilter, w.Name)
+
+		if err != nil {
+			fmt.Println(err)
 		}
 
+		if found {
+
+			if !w.Locked {
+				wsList = append(wsList, *w)
+			} else {
+				fmt.Printf("Post: Workspace Name %s, State %t\n", w.Name, w.Locked)
+				wsListLocked = append(wsListLocked, *w)
+			}
+
+		}
 	}
 
-	return wsList
+	return wsList, wsListLocked
 }
 
 func GetWorkspacesRunsList(client *tfe.Client, org *tfe.Organization, wsList []tfe.Workspace) []tfe.RunList {

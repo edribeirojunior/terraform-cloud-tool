@@ -8,7 +8,7 @@ import (
 
 var (
 	token, org, wtags, wtype, varName, varValue, setTags, setTerraformVersion string
-	varSensitive                                                              bool
+	varSensitive, setLock                                                     bool
 )
 
 func NewVariableClient(token, org, wtags, wtype, varName, varValue string, varSensitive bool) variables.Variable {
@@ -17,7 +17,7 @@ func NewVariableClient(token, org, wtags, wtype, varName, varValue string, varSe
 
 	o := client.GetOrg(cl, org)
 
-	wsList := client.GetWorkspacesList(cl, o, wtags, wtype)
+	wsList, _ := client.GetWorkspacesList(cl, o, wtags, wtype, setLock)
 
 	vS := variables.Variable{
 		Cl:                 cl,
@@ -33,14 +33,16 @@ func NewVariableClient(token, org, wtags, wtype, varName, varValue string, varSe
 func NewWorkspaceClient(token, org, wtags, wtype, setTags, setTerraformVersion string) workspace.Workspace {
 	cl := client.NewTfClient(token)
 	o := client.GetOrg(cl, org)
-	wsList := client.GetWorkspacesList(cl, o, wtags, wtype)
-	wsRunsList := client.GetWorkspacesRunsList(cl, o, wsList)
+	wsList, wsListLocked := client.GetWorkspacesList(cl, o, wtags, wtype, setLock)
+
+	//wsRunsList := client.GetWorkspacesRunsList(cl, o, wsList)
 	ws := workspace.Workspace{
 		Cl:               cl,
 		List:             wsList,
+		ListLocked:       wsListLocked,
 		Tags:             &wtags,
 		TerraformVersion: &setTerraformVersion,
-		RunsList:         wsRunsList,
+		//RunsList:         wsRunsList,
 	}
 
 	return ws

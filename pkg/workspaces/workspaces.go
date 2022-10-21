@@ -9,11 +9,12 @@ import (
 	"github.com/hashicorp/go-tfe"
 )
 
-func NewClient(client *tfe.Client, ws []tfe.Workspace, setTags, setTerraformVersion string) Workspace {
+func NewClient(client *tfe.Client, ws []tfe.Workspace, wsLocked []tfe.Workspace, setTags, setTerraformVersion string) Workspace {
 
 	return Workspace{
 		Cl:               client,
 		List:             ws,
+		ListLocked:       wsLocked,
 		Tags:             &setTags,
 		TerraformVersion: &setTerraformVersion,
 	}
@@ -104,34 +105,41 @@ func (ws *Workspace) Create() {
 // 	}
 // }
 
+func (ws *Workspace) Unlock() {
+	ctx := context.Background()
+
+	for _, w := range ws.ListLocked {
+
+		fmt.Println("Unlocking Workspace", w.Name, w.Tags)
+
+		_, err := ws.Cl.Workspaces.ForceUnlock(ctx, w.ID)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+	}
+
+}
+
 func (ws *Workspace) ApproveChanges(action string) string {
 
-	var wsList []string
-
-	for i := 0; i < len(ws.List); i++ {
-		wsList = append(wsList, ws.List[i].Name)
-	}
 	if action == "create" {
 		fmt.Printf("The Tags/Terraform Version will be created in these workspaces:\n")
-		for _, i := range wsList {
-			fmt.Printf("%s\n", i)
-		}
-		if *ws.Version != "" {
-			fmt.Printf("The Terraform version of environment will change in these workspaces:\n")
-			for _, i := range wsList {
-				fmt.Printf("%s\n", i)
-			}
+		for _, i := range ws.List {
+			fmt.Printf("%s\n", i.Name)
 		}
 
-		// } else if action == "delete" {
-		// 	fmt.Printf("The Variable %s will be deleted in these workspaces:\n", *ws.Variables)
-		// 	for _, i := range wsList {
-		// 		fmt.Printf("%s\n", i)
-		// 	}
 	} else if action == "cancel" {
 		fmt.Printf("The runs for the following workspaces, will be cancelled:\n")
-		for _, i := range wsList {
-			fmt.Printf("%s\n", i)
+		for _, i := range ws.List {
+			fmt.Printf("%s\n", i.Name)
+		}
+
+	} else if action == "unlock" {
+		fmt.Printf("Unlock workspaces:\n")
+		for _, i := range ws.ListLocked {
+			fmt.Printf("%s\n", i.Name)
 		}
 
 	} else {
