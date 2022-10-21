@@ -7,4 +7,5 @@ type Workspace struct {
 	List             []tfe.Workspace
 	Tags             *string `json:",omitempty"`
 	TerraformVersion *string `json:",omitempty"`
+	RunsList         []tfe.RunList
 }

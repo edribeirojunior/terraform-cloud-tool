@@ -104,6 +104,7 @@ func GetOrg(client *tfe.Client, organization string) *tfe.Organization {
 func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilter string) []tfe.Workspace {
 	ctx := context.Background()
 
+	var workspaces []*tfe.Workspace
 	workspace, err := client.Workspaces.List(ctx, org.Name, tfe.WorkspaceListOptions{
 		ListOptions: tfe.ListOptions{PageSize: 100},
 		Tags:        &wtags,
@@ -114,22 +115,52 @@ func GetWorkspacesList(client *tfe.Client, org *tfe.Organization, wtags, wsfilte
 		return nil
 	}
 
-	wsList := GetWorkspace(workspace, wsfilter)
+	for i := 0; i < workspace.TotalPages; i++ {
+		workspaces = append(workspaces, workspace.Items...)
+		if workspace.CurrentPage == workspace.TotalPages {
+			break
+		}
+	}
+
+	wsList := GetWorkspace(workspaces, wsfilter)
 
 	return wsList
 
 }
 
-func GetWorkspace(workspaceName *tfe.WorkspaceList, wsfilter string) []tfe.Workspace {
+func GetWorkspace(workspaceName []*tfe.Workspace, wsfilter string) []tfe.Workspace {
 	var wsList []tfe.Workspace
-	for i := 0; i < len(workspaceName.Items); i++ {
+	for i := 0; i < len(workspaceName); i++ {
 
-		found, _ := regexp.MatchString(wsfilter, workspaceName.Items[i].Name)
+		found, _ := regexp.MatchString(wsfilter, workspaceName[i].Name)
 		if found {
-			wsList = append(wsList, *workspaceName.Items[i])
+			wsList = append(wsList, *workspaceName[i])
 		}
 
 	}
 
 	return wsList
+}
+
+func GetWorkspacesRunsList(client *tfe.Client, org *tfe.Organization, wsList []tfe.Workspace) []tfe.RunList {
+	ctx := context.Background()
+
+	var wsRunsList []tfe.RunList
+
+	for i := 0; i < len(wsList); i++ {
+		runList, err := client.Runs.List(ctx, wsList[i].ID, tfe.RunListOptions{
+			ListOptions: tfe.ListOptions{PageSize: 100},
+		})
+
+		if err != nil {
+			log.Fatal(err)
+			return nil
+		}
+
+		wsRunsList = append(wsRunsList, *runList)
+
+	}
+
+	return wsRunsList
+
 }

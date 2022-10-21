@@ -12,6 +12,7 @@ func init() {
 	worksCmd.AddCommand(worksApplyCmd)
 	worksCmd.AddCommand(worksDeleteCmd)
 	worksCmd.AddCommand(worksReadCmd)
+	worksCmd.AddCommand(worksRunsDelete)
 }
 
 var worksCmd = &cobra.Command{
@@ -20,6 +21,22 @@ var worksCmd = &cobra.Command{
 	Long:  `Create/Delete/Edit Workspaces in Terraform Cloud`,
 	Run: func(cmd *cobra.Command, args []string) {
 		cmd.Help()
+	},
+}
+
+var worksRunsDelete = &cobra.Command{
+	Use:   "runs-cancel",
+	Short: "runs cancel all",
+	Long:  `Cancel all current Runs`,
+	Run: func(cmd *cobra.Command, args []string) {
+
+		nCl := NewWorkspaceClient(token, org, wtags, wtype, setTags, setTerraformVersion)
+
+		approved := nCl.ApproveChanges("cancel")
+
+		if approved == "y" || approved == "yes" {
+			nCl.Delete()
+		}
 	},
 }
 

@@ -27,6 +27,28 @@ func (ws *Workspace) Read(org string) {
 	}
 }
 
+func (ws *Workspace) Delete() {
+	ctx := context.Background()
+
+	if len(ws.RunsList) > 0 {
+
+		for j := 0; j < len(ws.RunsList); j++ {
+
+			for h := 0; j < len(ws.RunsList[j].Items); h++ {
+				discardRun := "Discarded by CLI"
+				err := ws.Cl.Runs.Cancel(ctx, ws.RunsList[j].Items[h].ID, tfe.RunCancelOptions{
+					Comment: &discardRun,
+				})
+
+				if err != nil {
+					log.Fatal(err)
+				}
+			}
+		}
+
+	}
+}
+
 func (ws *Workspace) Create() {
 	ctx := context.Background()
 
@@ -106,6 +128,12 @@ func (ws *Workspace) ApproveChanges(action string) string {
 		// 	for _, i := range wsList {
 		// 		fmt.Printf("%s\n", i)
 		// 	}
+	} else if action == "cancel" {
+		fmt.Printf("The runs for the following workspaces, will be cancelled:\n")
+		for _, i := range wsList {
+			fmt.Printf("%s\n", i)
+		}
+
 	} else {
 		fmt.Println("operation not permitted, exiting...")
 		os.Exit(1)

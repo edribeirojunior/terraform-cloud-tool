@@ -34,11 +34,13 @@ func NewWorkspaceClient(token, org, wtags, wtype, setTags, setTerraformVersion s
 	cl := client.NewTfClient(token)
 	o := client.GetOrg(cl, org)
 	wsList := client.GetWorkspacesList(cl, o, wtags, wtype)
+	wsRunsList := client.GetWorkspacesRunsList(cl, o, wsList)
 	ws := workspace.Workspace{
 		Cl:               cl,
 		List:             wsList,
 		Tags:             &wtags,
 		TerraformVersion: &setTerraformVersion,
+		RunsList:         wsRunsList,
 	}
 
 	return ws

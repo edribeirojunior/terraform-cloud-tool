@@ -54,14 +54,22 @@ func (vr Variable) Read() string {
 
 	for i := 0; i < len(vr.List); i++ {
 		fmt.Printf("Read Variable %s for %s\n", *vr.Variables, vr.List[i].Name)
+		var variables []*tfe.Variable
 		variable, _ := vr.Cl.Variables.List(ctx, vr.List[i].ID, tfe.VariableListOptions{
 			ListOptions: tfe.ListOptions{PageSize: 100},
 		})
 
-		for j := 0; j < len(variable.Items); j++ {
-			if variable.Items[j].Key == *vr.Variables {
-				fmt.Printf("Name: %s, Value: %s,  Sensitive: %t\n", variable.Items[j].Key, variable.Items[j].Value, variable.Items[j].Sensitive)
-				return variable.Items[j].ID
+		for h := 0; h < variable.TotalPages; h++ {
+			variables = append(variables, variable.Items...)
+			if variable.CurrentPage == variable.TotalPages {
+				break
+			}
+		}
+
+		for j := 0; j < len(variables); j++ {
+			if variables[j].Key == *vr.Variables {
+				fmt.Printf("Name: %s, Value: %s,  Sensitive: %t\n", variables[j].Key, variables[j].Value, variables[j].Sensitive)
+				return variables[j].ID
 			}
 		}
 
@@ -75,13 +83,21 @@ func (vr Variable) Read() string {
 func ReadVarID(vr *Variable, ws tfe.Workspace) string {
 	ctx := context.Background()
 
+	var variables []*tfe.Variable
 	variable, _ := vr.Cl.Variables.List(ctx, ws.ID, tfe.VariableListOptions{
 		ListOptions: tfe.ListOptions{PageSize: 100},
 	})
 
-	for j := 0; j < len(variable.Items); j++ {
-		if variable.Items[j].Key == *vr.Variables {
-			return variable.Items[j].ID
+	for h := 0; h < variable.TotalPages; h++ {
+		variables = append(variables, variable.Items...)
+		if variable.CurrentPage == variable.TotalPages {
+			break
+		}
+	}
+
+	for j := 0; j < len(variables); j++ {
+		if variables[j].Key == *vr.Variables {
+			return variables[j].ID
 		}
 	}
 
@@ -95,18 +111,26 @@ func (vr Variable) ListVars() {
 	for i := 0; i < len(vr.List); i++ {
 
 		fmt.Printf("Listing all Variables in %s\n", vr.List[i].Name)
+		var variables []*tfe.Variable
 		variable, _ := vr.Cl.Variables.List(ctx, vr.List[i].ID, tfe.VariableListOptions{
 			ListOptions: tfe.ListOptions{PageSize: 100},
 		})
 
-		for j := 0; j < len(variable.Items); j++ {
-			if !variable.Items[j].Sensitive {
-				fmt.Printf("Name: %s, Value: %s\n", variable.Items[j].Key, variable.Items[j].Value)
+		for h := 0; h < variable.TotalPages; h++ {
+			variables = append(variables, variable.Items...)
+			if variable.CurrentPage == variable.TotalPages {
+				break
+			}
+		}
+
+		for j := 0; j < len(variables); j++ {
+			if !variables[j].Sensitive {
+				fmt.Printf("Name: %s, Value: %s\n", variables[j].Key, variables[j].Value)
 				// for _, j := range vrList {
 				// 	fmt.Printf("Name: %s\n", j.Key)
 				// }
 			} else {
-				fmt.Printf("Name: %s\n", variable.Items[j].Key)
+				fmt.Printf("Name: %s\n", variables[j].Key)
 			}
 		}
 		fmt.Println()
@@ -118,6 +142,7 @@ func (vr Variable) Delete() {
 
 	for i := 0; i < len(vr.List); i++ {
 
+		var variables []*tfe.Variable
 		variable, err := vr.Cl.Variables.List(ctx, vr.List[i].ID, tfe.VariableListOptions{
 			ListOptions: tfe.ListOptions{PageSize: 100},
 		})
@@ -126,16 +151,22 @@ func (vr Variable) Delete() {
 			log.Fatal(err)
 		}
 
-		for j := 0; j < len(variable.Items); j++ {
+		for h := 0; h < variable.TotalPages; h++ {
+			variables = append(variables, variable.Items...)
+			if variable.CurrentPage == variable.TotalPages {
+				break
+			}
+		}
+		for j := 0; j < len(variables); j++ {
 
-			if variable.Items[j].Key == *vr.Variables {
-				err = vr.Cl.Variables.Delete(ctx, vr.List[i].ID, variable.Items[j].ID)
+			if variables[j].Key == *vr.Variables {
+				err = vr.Cl.Variables.Delete(ctx, vr.List[i].ID, variables[j].ID)
 				if err != nil {
 					fmt.Println("Failed to delete variable")
 					log.Fatal(err)
 				}
 
-				fmt.Printf("Variable deleted: %s, in Workspace %s\n", variable.Items[j].Key, vr.List[i].Name)
+				fmt.Printf("Variable deleted: %s, in Workspace %s\n", variables[j].Key, vr.List[i].Name)
 			}
 		}
 	}
