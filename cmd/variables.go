@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+
 	"github.com/edribeirojunior/terraform-cloud-tool/pkg/variables"
 	"github.com/spf13/cobra"
 )
@@ -12,6 +14,8 @@ func init() {
 	varsCmd.PersistentFlags().BoolVar(&varSensitive, "vs", false, "Variable Value is Sensitive")
 
 	varsCmd.AddCommand(varsReadCmd)
+	varsReadCmd.Flags().Bool("show-all", false, "if set shows variables for all rings instead of only for the first ring")
+
 	varsCmd.AddCommand(varsListCmd)
 	varsCmd.AddCommand(varsApplyCmd)
 	varsCmd.AddCommand(varsDeleteCmd)
@@ -30,11 +34,22 @@ var varsReadCmd = &cobra.Command{
 	Use:   "read",
 	Short: "Read variable in a Workspace",
 	Long:  "Read variable in a Workspace",
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 
 		nCl := NewClient(token, org, wtags, wtype, varName, varValue, setTags, varSensitive)
 
-		variables.Read(nCl)
+		showAll, err := cmd.Flags().GetBool("show-all")
+		if err != nil {
+			return fmt.Errorf("invalid flag: %s", err)
+		}
+
+		if showAll {
+			variables.ReadAll(nCl)
+		} else {
+			variables.Read(nCl)
+		}
+
+		return nil
 	},
 }
 

@@ -72,6 +72,21 @@ func Read(ws client.Workspaces) string {
 	return ""
 }
 
+func ReadAll(ws client.Workspaces) {
+	ctx := context.Background()
+	for i := 0; i < len(ws.List); i++ {
+		variable, _ := ws.Cl.Variables.List(ctx, ws.List[i].ID, tfe.VariableListOptions{
+			ListOptions: tfe.ListOptions{PageSize: 100},
+		})
+
+		for j := 0; j < len(variable.Items); j++ {
+			if variable.Items[j].Key == *ws.Variables {
+				fmt.Printf("Workspace: %s, Name: %s, Value: %s,  Sensitive: %t\n", ws.List[i].Name, variable.Items[j].Key, variable.Items[j].Value, variable.Items[j].Sensitive)
+			}
+		}
+	}
+}
+
 func List(ws client.Workspaces) {
 	ctx := context.Background()
 
